@@ -7,7 +7,7 @@ import datetime
 
 # import matplotlib
 # matplotlib.use('TkAgg')
-
+#imgtime = 1
 
 def merge_images(img1, img2):
     # 初始化SIFT检测子
@@ -26,9 +26,11 @@ def merge_images(img1, img2):
                                            flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
     img2_sift_keypoints = cv.drawKeypoints(img2, kp2, img2_sift_keypoints,
                                            flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    # plt.imshow(img1_sift_keypoints)
-    # plt.imshow(img2_sift_keypoints)
-    # plt.show()
+    #plt.subplot(211)
+    #plt.imshow(img1_sift_keypoints)
+    #plt.subplot(212)
+    #plt.imshow(img2_sift_keypoints)
+    #plt.show()
 
     # BFMatcher 使用默认参数进行匹配
 
@@ -108,12 +110,24 @@ def merge_images(img1, img2):
 
     # 对右边的图片进行变换，得到变换后的图像
     img_out = cv.warpPerspective(img2, H, (x_out, y_out))
+    # 获取变换后图像的所占部分
+    mask = np.zeros((img2.shape[0], img2.shape[1]), np.uint8)  
+    mask.fill(1)
+    #print(mask.shape)
+    img_out_mask = cv.warpPerspective(mask, H, (x_out, y_out))
+    # img_out_mask 与 img_out 大小相同（单通道），0部分为padding，1部分为图像位置
+    #global imgtime
+    #cv2.imwrite('./imgmid' + str(imgtime) + '.png', img_out)
+    #cv2.imwrite('./imgmask' + str(imgtime) + '.png', img_out_mask)
+    #imgtime += 1
     # return img_out
     # 将变换后的图片和左边的图片拼接
     for i in range(img_out.shape[0]):
         x_temple = x1 + (x2 - x1) / (y2 - y1) * (i - y1)
+        #print('xtemple:', x_temple)
         for j in range(img_out.shape[1]):
-            if j < x_temple:
+            #if j < x_temple:
+            if img_out_mask[i, j] == 0: # 不在mask里，用img1
                 if i < img1.shape[0] - 1 and j < img1.shape[1] - 1:
                     img_out[i, j] = img1[i, j]
                 else:
@@ -133,9 +147,9 @@ def merge_images(img1, img2):
 k = 4
 # 读入图像
 img = []
-img.append(cv.imread("/Users/dy/PycharmProjects/cv_exp/sift/image/1_resize.jpg"))
+img.append(cv.imread("./image/1_resize.jpg"))
 for i in range(1, k + 1):
-    img.append(cv.imread("/Users/dy/PycharmProjects/cv_exp/sift/image/" + str(i) + "_resize.jpg"))
+    img.append(cv.imread("./image/" + str(i) + "_resize.jpg"))
     print(img[i])
 
 
@@ -154,4 +168,4 @@ img = merge(1,4)
 
 endtime = datetime.datetime.now()
 print((endtime - starttime).seconds)
-cv.imwrite('/Users/dy/PycharmProjects/cv_exp/sift/image/result.png', img)
+cv.imwrite('./image/result.png', img)
