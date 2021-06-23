@@ -133,9 +133,9 @@ def merge_images(img1, img2):
 k = 4
 # 读入图像
 img = []
-img.append(cv.imread("/Users/dy/PycharmProjects/cv_exp/sift/image/1_resize.jpg"))
+img.append(cv.imread("./image/1_resize.jpg"))
 for i in range(1, k + 1):
-    img.append(cv.imread("/Users/dy/PycharmProjects/cv_exp/sift/image/" + str(i) + "_resize.jpg"))
+    img.append(cv.imread("./image/" + str(i) + "_resize.jpg"))
     print(img[i])
 
 
@@ -154,4 +154,4 @@ img = merge(1,4)
 
 endtime = datetime.datetime.now()
 print((endtime - starttime).seconds)
-cv.imwrite('/Users/dy/PycharmProjects/cv_exp/sift/image/result.png', img)
+cv.imwrite('./image/result.png', img)
