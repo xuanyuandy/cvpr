@@ -1,3 +1,5 @@
+import os
+
 import cv2
 import numpy as np
 
@@ -5,10 +7,10 @@ FP = 'image/'
 SP = 'temp/'
 
 
-def cvshow(name, img):
+def cvshow(name, img, dir=SP):
     # cv2.imshow(name, img)
-    print(SP + name)
-    cv2.imwrite(SP + name, img)
+    print(dir + name)
+    cv2.imwrite(dir + name, img)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
@@ -54,7 +56,7 @@ def drawMatches(imageA, imageB, kpsA, kpsB, matches, status):
 
 
 # 全景拼接
-def siftimg_rightlignment(img_right, img_left):
+def siftimg_rightlignment(img_right, img_left, dir=SP):
     _, kp1, des1 = sift_kp(img_right)
     _, kp2, des2 = sift_kp(img_left)
     goodMatch = get_good_match(des1, des2)
@@ -69,37 +71,51 @@ def siftimg_rightlignment(img_right, img_left):
 
         # 将图片右进行视角变换，result是变换后图片
         result = cv2.warpPerspective(img_right, H, (img_right.shape[1] + img_left.shape[1], img_right.shape[0]))
-        cvshow('result_medium.png', result)
+
+        cvshow('result_medium.png', result, dir)
         # 将图片左传入result图片最左端
         result[0:img_left.shape[0], 0:img_left.shape[1]] = img_left
         return result
 
+def crop(image):
+    y_nonzero, x_nonzero, _ = np.nonzero(image)
+    return image[np.min(y_nonzero):np.max(y_nonzero), np.min(x_nonzero):np.max(x_nonzero)]
 
-# 读取拼接图片（注意图片左右的放置）
-# 是对右边的图形做变换
-img_right = cv2.imread(FP + 'build (1).jpg')
-img_left = cv2.imread(FP + 'build (2).jpg')
 
-img_right = cv2.resize(img_right, None, fx=0.5, fy=0.3)
-# 保证两张图一样大
-img_left = cv2.resize(img_left, (img_right.shape[1], img_right.shape[0]))
+def merge(img_1, img_2, dir=SP, fx=0.5, fy=0.3):
+    # 读取拼接图片（注意图片左右的放置）
+    # 是对右边的图形做变换
+    if not os.path.exists(dir):
+        os.makedirs('./' + dir)
+    img_right = cv2.imread(FP + img_1)
+    img_left = cv2.imread(FP + img_2)
 
-kpimg_right, kp1, des1 = sift_kp(img_right)
-kpimg_left, kp2, des2 = sift_kp(img_left)
+    img_right = cv2.resize(img_right, None, fx=fx, fy=fy)
+    # 保证两张图一样大
+    img_left = cv2.resize(img_left, (img_right.shape[1], img_right.shape[0]))
 
-# 同时显示原图和关键点检测后的图
-cvshow('img_1.png', np.hstack((img_left, kpimg_left)))
-cvshow('img_2.png', np.hstack((img_right, kpimg_right)))
-goodMatch = get_good_match(des1, des2)
+    kpimg_right, kp1, des1 = sift_kp(img_right)
+    kpimg_left, kp2, des2 = sift_kp(img_left)
 
-all_goodmatch_img = cv2.drawMatches(img_right, kp1, img_left, kp2, goodMatch, None, flags=2)
+    # 同时显示原图和关键点检测后的图
+    cvshow('img_1.png', np.hstack((img_left, kpimg_left)), dir)
+    cvshow('img_2.png', np.hstack((img_right, kpimg_right)), dir)
+    goodMatch = get_good_match(des1, des2)
 
-# goodmatch_img自己设置前多少个goodMatch[:10]
-goodmatch_img = cv2.drawMatches(img_right, kp1, img_left, kp2, goodMatch[:10], None, flags=2)
+    all_goodmatch_img = cv2.drawMatches(img_right, kp1, img_left, kp2, goodMatch, None, flags=2)
 
-cvshow('keypoint_matches_1.png', all_goodmatch_img)
-cvshow('keypoint_matches_2.png', goodmatch_img)
+    # goodmatch_img自己设置前多少个goodMatch[:10]
+    goodmatch_img = cv2.drawMatches(img_right, kp1, img_left, kp2, goodMatch[:10], None, flags=2)
 
-# 把图片拼接成全景图
-result = siftimg_rightlignment(img_right, img_left)
-cvshow('result.png', result)
+    cvshow('keypoint_matches_1.png', all_goodmatch_img, dir)
+    cvshow('keypoint_matches_2.png', goodmatch_img, dir)
+
+    # 把图片拼接成全景图
+    result = siftimg_rightlignment(img_right, img_left, dir)
+    cvshow('result.png', result, dir)
+    cvshow('result_2.png', crop(result), dir)
+
+
+
+if __name__ == '__main__':
+    merge('img (2).jpg', 'img (1).jpg', "temp2/", 0.5, 0.3)
