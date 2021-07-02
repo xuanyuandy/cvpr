@@ -77,9 +77,18 @@ def siftimg_rightlignment(img_right, img_left, dir=SP):
         result[0:img_left.shape[0], 0:img_left.shape[1]] = img_left
         return result
 
-def crop(image):
-    y_nonzero, x_nonzero, _ = np.nonzero(image)
-    return image[np.min(y_nonzero):np.max(y_nonzero), np.min(x_nonzero):np.max(x_nonzero)]
+
+def crop(image, dir=SP):
+    gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    while True:
+        if gray_img[0, -1] == 0:
+            gray_img = gray_img[:, :-1]
+        elif gray_img[-1, -1] == 0:
+            gray_img = gray_img[:, :-1]
+        else:
+            break
+    # cvshow("result_gray.png", gray_img, dir)
+    return image[:gray_img.shape[0], :gray_img.shape[1]]
 
 
 def merge(img_1, img_2, dir=SP, fx=0.5, fy=0.3):
@@ -91,8 +100,9 @@ def merge(img_1, img_2, dir=SP, fx=0.5, fy=0.3):
     img_left = cv2.imread(FP + img_2)
 
     img_right = cv2.resize(img_right, None, fx=fx, fy=fy)
-    # 保证两张图一样大
-    img_left = cv2.resize(img_left, (img_right.shape[1], img_right.shape[0]))
+    # 保证两张图一样大(高)
+    img_left = cv2.resize(img_left,
+                          (int(img_left.shape[1] / img_left.shape[0] * img_right.shape[0]), img_right.shape[0]))
 
     kpimg_right, kp1, des1 = sift_kp(img_right)
     kpimg_left, kp2, des2 = sift_kp(img_left)
@@ -112,10 +122,8 @@ def merge(img_1, img_2, dir=SP, fx=0.5, fy=0.3):
 
     # 把图片拼接成全景图
     result = siftimg_rightlignment(img_right, img_left, dir)
-    cvshow('result.png', result, dir)
-    cvshow('result_2.png', crop(result), dir)
-
+    cvshow('result.png', crop(result, dir), dir)
 
 
 if __name__ == '__main__':
-    merge('img (2).jpg', 'img (1).jpg', "temp2/", 0.5, 0.3)
+    merge('img (3).jpg', 'merge21.png', "temp2/", 0.5, 0.5)
