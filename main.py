@@ -60,12 +60,12 @@ def siftimg_rightlignment(img_right, img_left, dir=SP):
     _, kp1, des1 = sift_kp(img_right)
     _, kp2, des2 = sift_kp(img_left)
     goodMatch = get_good_match(des1, des2)
-    # 当筛选项的匹配对大于4对时：计算视角变换矩阵
-    if len(goodMatch) > 4:
+    # 当筛选项的匹配对大于5对时：计算视角变换矩阵
+    if len(goodMatch) > 5:
         # 获取匹配对的点坐标
         ptsA = np.float32([kp1[m.queryIdx].pt for m in goodMatch]).reshape(-1, 1, 2)
         ptsB = np.float32([kp2[m.trainIdx].pt for m in goodMatch]).reshape(-1, 1, 2)
-        ransacReprojThreshold = 4
+        ransacReprojThreshold = 5
         H, status = cv2.findHomography(ptsA, ptsB, cv2.RANSAC, ransacReprojThreshold)
         #  该函数的作用就是先用RANSAC选择最优的四组配对点，再计算H矩阵。H为3*3矩阵
 
