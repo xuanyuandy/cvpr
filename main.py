@@ -125,17 +125,20 @@ def merge(img_1, img_2, dir=SP, fx=0.5, fy=0.3):
     cvshow('result.png', crop(result, dir), dir)
 
 
+def bat_merge(start, end):
+    img_left = FP + 'img (' + str(start + 1) + ').jpg'
+    img_right = FP + 'img (' + str(start) + ').jpg'
+    dir = 'temp' + str(start) + os.sep
+    merge(img_left, img_right, dir, 0.5, 0.5)
+
+    for i in range(start, end - 1):
+        img_left = FP + 'img (' + str(i + 2) + ').jpg'
+        img_right = dir + 'result.png'
+        dir = 'temp' + str(i + 1) + os.sep
+        merge(img_left, img_right, dir, 0.5, 0.5)
+
+
 if __name__ == '__main__':
     # merge img (1) - (4)
-
-    img_left = FP+'img ('+str(2)+').jpg'
-    img_right = FP+'img ('+str(1)+').jpg'
-    dir = 'temp' + str(1)+os.sep
-    merge(img_left,img_right,dir,0.6,0.6)
-
-    for i in range(1,4):
-        img_left = FP+'img (' + str(i + 2) + ').jpg'
-        img_right = dir+'result.png'
-        dir = 'temp' + str(i + 1)+os.sep
-        merge(img_left, img_right, dir, 0.6, 0.6)
-
+    # 1-4 5-8 9-13
+    bat_merge(9, 13)
