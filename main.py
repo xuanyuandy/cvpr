@@ -96,8 +96,8 @@ def merge(img_1, img_2, dir=SP, fx=0.5, fy=0.3):
     # 是对右边的图形做变换
     if not os.path.exists(dir):
         os.makedirs('./' + dir)
-    img_right = cv2.imread(FP + img_1)
-    img_left = cv2.imread(FP + img_2)
+    img_right = cv2.imread(img_1)
+    img_left = cv2.imread(img_2)
 
     img_right = cv2.resize(img_right, None, fx=fx, fy=fy)
     # 保证两张图一样大(高)
@@ -126,4 +126,16 @@ def merge(img_1, img_2, dir=SP, fx=0.5, fy=0.3):
 
 
 if __name__ == '__main__':
-    merge('img (3).jpg', 'merge21.png', "temp2/", 0.5, 0.5)
+    # merge img (1) - (4)
+
+    img_left = FP+'img ('+str(2)+').jpg'
+    img_right = FP+'img ('+str(1)+').jpg'
+    dir = 'temp' + str(1)+os.sep
+    merge(img_left,img_right,dir,0.6,0.6)
+
+    for i in range(1,4):
+        img_left = FP+'img (' + str(i + 2) + ').jpg'
+        img_right = dir+'result.png'
+        dir = 'temp' + str(i + 1)+os.sep
+        merge(img_left, img_right, dir, 0.6, 0.6)
+
